@@ -1,124 +1,51 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <title>Busca de SOCs – Cargo Blue</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>
+  fetch("csvjson.json")
+    .then(response => response.json())
+    .then(dados => {
 
-  <!-- Fonte Google -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+      const input = document.getElementById("busca");
+      const resultados = document.getElementById("resultados");
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+      input.addEventListener("input", () => {
+        const termo = input.value.toLowerCase().trim();
+        resultados.innerHTML = "";
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #0f4c81, #1e81ce);
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 40px 15px;
-    }
+        if (termo === "") {
+          resultados.innerHTML =
+            '<div class="empty">Digite algo para iniciar a busca</div>';
+          return;
+        }
 
-    .container {
-      background: #ffffff;
-      width: 100%;
-      max-width: 900px;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    }
+        const filtrados = dados.filter(item => {
+          // 🔥 AQUI ESTÁ A CORREÇÃO
+          const texto = JSON.stringify(item).toLowerCase();
+          return texto.includes(termo);
+        });
 
-    h1 {
-      margin-top: 0;
-      margin-bottom: 10px;
-      color: #0f4c81;
-      text-align: center;
-    }
+        if (filtrados.length === 0) {
+          resultados.innerHTML =
+            '<div class="empty">Nenhum resultado encontrado</div>';
+          return;
+        }
 
-    p.sub {
-      text-align: center;
-      color: #555;
-      margin-bottom: 25px;
-      font-size: 14px;
-    }
+        filtrados.forEach(item => {
+          resultados.innerHTML += `
+            <div class="card">
+              ${Object.entries(item).map(
+                ([chave, valor]) =>
+                  `<strong>${chave}:</strong> ${valor ?? ""}<br>`
+              ).join("")}
+            </div>
+          `;
+        });
+      });
 
-    input {
-      width: 100%;
-      padding: 14px 16px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      outline: none;
-      margin-bottom: 25px;
-    }
+    })
+    .catch(err => {
+      document.getElementById("resultados").innerHTML =
+        "<div class='empty'>Erro ao carregar os dados</div>";
+      console.error(err);
+    });
+</script>
 
-    input:focus {
-      border-color: #1e81ce;
-      box-shadow: 0 0 0 2px rgba(30,129,206,0.2);
-    }
-
-    .card {
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      padding: 18px;
-      margin-bottom: 15px;
-      background: #f9fafb;
-    }
-
-    .card strong {
-      color: #0f4c81;
-    }
-
-    .empty {
-      text-align: center;
-      color: #666;
-      margin-top: 20px;
-    }
-
-    @media (max-width: 600px) {
-      body {
-        padding: 20px 10px;
-      }
-      .container {
-        padding: 20px;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <h1>Busca de SOCs</h1>
-    <p class="sub">Digite cidade, SOC, HUB ou qualquer trecho do endereço</p>
-
-    <input
-      id="busca"
-      type="text"
-      placeholder="Ex: Curitiba, SOC-PR1, Osasco..."
-    >
-
-    <div id="resultados"></div>
-  </div>
-
-  <script>
-    fetch("csvjson.json")
-      .then(response => response.json())
-      .then(dados => {
-
-        const input = document.getElementById("busca");
-        const resultados = document.getElementById("resultados");
-
-        input.addEventListener("input", () => {
-          const termo = input.value.toLowerCase().trim();
-          resultados.innerHTML = "";
-
-          if (termo === "") {
-            resultados.innerHT
 

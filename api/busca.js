@@ -1,7 +1,7 @@
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   try {
     const termo = (req.query.q || "").toLowerCase().trim();
 
@@ -10,7 +10,7 @@ export default function handler(req, res) {
     }
 
     const filePath = path.join(process.cwd(), "csvjson.json");
-    const raw = fs.readFileSync(filePath, "utf8");
+    const raw = await fs.readFile(filePath, "utf8");
     const json = JSON.parse(raw);
 
     let dados = [];
@@ -26,4 +26,16 @@ export default function handler(req, res) {
 
     for (let i = 0; i < dados.length; i++) {
       if (JSON.stringify(dados[i]).toLowerCase().includes(termo)) {
-        resultados.pu
+        resultados.push(dados[i]);
+        if (resultados.length >= 50) break;
+      }
+    }
+
+    return res.status(200).json(resultados);
+
+  } catch (erro) {
+    console.error(erro);
+    return res.status(500).json({ erro: "Erro interno no backend" });
+  }
+}
+

@@ -1,34 +1,21 @@
 <script>
   fetch("csvjson.json")
-    .then(response => response.json())
+    .then(res => res.json())
     .then(dados => {
 
       const input = document.getElementById("busca");
       const resultados = document.getElementById("resultados");
 
-      input.addEventListener("input", () => {
-        const termo = input.value.toLowerCase().trim();
+      function render(lista) {
         resultados.innerHTML = "";
 
-        if (termo === "") {
-          resultados.innerHTML =
-            '<div class="empty">Digite algo para iniciar a busca</div>';
-          return;
-        }
-
-        const filtrados = dados.filter(item => {
-          // 🔥 AQUI ESTÁ A CORREÇÃO
-          const texto = JSON.stringify(item).toLowerCase();
-          return texto.includes(termo);
-        });
-
-        if (filtrados.length === 0) {
+        if (!lista || lista.length === 0) {
           resultados.innerHTML =
             '<div class="empty">Nenhum resultado encontrado</div>';
           return;
         }
 
-        filtrados.forEach(item => {
+        lista.forEach(item => {
           resultados.innerHTML += `
             <div class="card">
               ${Object.entries(item).map(
@@ -38,6 +25,24 @@
             </div>
           `;
         });
+      }
+
+      // 🔹 MOSTRA TUDO AO ABRIR
+      render(dados);
+
+      input.addEventListener("input", () => {
+        const termo = input.value.toLowerCase().trim();
+
+        if (termo === "") {
+          render(dados);
+          return;
+        }
+
+        const filtrados = dados.filter(item =>
+          JSON.stringify(item).toLowerCase().includes(termo)
+        );
+
+        render(filtrados);
       });
 
     })
@@ -47,5 +52,6 @@
       console.error(err);
     });
 </script>
+
 
 

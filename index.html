@@ -1,57 +1,127 @@
-<script>
-  fetch("csvjson.json")
-    .then(res => res.json())
-    .then(dados => {
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Busca de SOCs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-      const input = document.getElementById("busca");
-      const resultados = document.getElementById("resultados");
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0f4c81;
+    }
 
-      function render(lista) {
-        resultados.innerHTML = "";
+    .box {
+      max-width: 900px;
+      margin: auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+    }
 
-        if (!lista || lista.length === 0) {
-          resultados.innerHTML =
-            '<div class="empty">Nenhum resultado encontrado</div>';
-          return;
+    h1 {
+      text-align: center;
+      color: #0f4c81;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin: 20px 0;
+    }
+
+    .item {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+
+    .msg {
+      text-align: center;
+      color: #555;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="box">
+    <h1>Busca de SOCs</h1>
+
+    <input id="busca" placeholder="Digite qualquer coisa (cidade, SOC, endereço)">
+
+    <div id="lista"></div>
+  </div>
+
+  <script>
+    fetch("csvjson.json")
+      .then(r => r.json())
+      .then(raw => {
+
+        // 🔥 NORMALIZA QUALQUER JSON
+        let dados = [];
+
+        if (Array.isArray(raw)) {
+          dados = raw;
+        } else {
+          const primeiroNivel = Object.values(raw)[0];
+          if (Array.isArray(primeiroNivel)) {
+            dados = primeiroNivel;
+          }
         }
 
-        lista.forEach(item => {
-          resultados.innerHTML += `
-            <div class="card">
-              ${Object.entries(item).map(
-                ([chave, valor]) =>
-                  `<strong>${chave}:</strong> ${valor ?? ""}<br>`
-              ).join("")}
-            </div>
-          `;
+        const lista = document.getElementById("lista");
+        const busca = document.getElementById("busca");
+
+        function render(arr) {
+          lista.innerHTML = "";
+          if (!arr || arr.length === 0) {
+            lista.innerHTML = "<div class='msg'>Nenhum resultado</div>";
+            return;
+          }
+
+          arr.forEach(linha => {
+            lista.innerHTML += `
+              <div class="item">
+                ${JSON.stringify(linha, null, 2)}
+              </div>
+            `;
+          });
+        }
+
+        // MOSTRA TUDO AO ABRIR
+        render(dados);
+
+        busca.addEventListener("input", () => {
+          const termo = busca.value.toLowerCase();
+
+          if (!termo) {
+            render(dados);
+            return;
+          }
+
+          const filtrado = dados.filter(l =>
+            JSON.stringify(l).toLowerCase().includes(termo)
+          );
+
+          render(filtrado);
         });
-      }
 
-      // 🔹 MOSTRA TUDO AO ABRIR
-      render(dados);
-
-      input.addEventListener("input", () => {
-        const termo = input.value.toLowerCase().trim();
-
-        if (termo === "") {
-          render(dados);
-          return;
-        }
-
-        const filtrados = dados.filter(item =>
-          JSON.stringify(item).toLowerCase().includes(termo)
-        );
-
-        render(filtrados);
+      })
+      .catch(e => {
+        document.body.innerHTML =
+          "<h2 style='color:white;text-align:center'>ERRO AO CARREGAR JSON</h2>";
+        console.error(e);
       });
+  </script>
 
-    })
-    .catch(err => {
-      document.getElementById("resultados").innerHTML =
-        "<div class='empty'>Erro ao carregar os dados</div>";
-      console.error(err);
-    });
-</script>
+</body>
+</html>
+
 
 
 

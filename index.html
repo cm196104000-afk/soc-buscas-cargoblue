@@ -8,53 +8,65 @@
   <style>
     body {
       margin: 0;
-      padding: 20px;
-      font-family: Arial, Helvetica, sans-serif;
+      padding: 30px;
+      font-family: Arial, sans-serif;
       background: #0f4c81;
     }
 
-    .box {
+    .container {
       max-width: 900px;
       margin: auto;
-      background: #ffffff;
-      padding: 20px;
+      background: #fff;
+      padding: 25px;
       border-radius: 8px;
     }
 
     h1 {
       text-align: center;
       color: #0f4c81;
+      margin-bottom: 10px;
+    }
+
+    p {
+      text-align: center;
+      color: #555;
+      font-size: 14px;
+      margin-bottom: 20px;
     }
 
     input {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       font-size: 16px;
-      margin: 20px 0;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
     }
 
-    .item {
+    .resultado {
       border-bottom: 1px solid #ddd;
       padding: 10px 0;
-      font-size: 14px;
       white-space: pre-wrap;
+      font-size: 13px;
     }
 
     .msg {
       text-align: center;
-      color: #555;
+      color: #777;
       margin-top: 20px;
     }
   </style>
 </head>
 <body>
 
-  <div class="box">
+  <div class="container">
     <h1>Busca de SOCs</h1>
+    <p>Digite cidade, SOC, HUB ou qualquer texto</p>
 
-    <input id="busca" placeholder="Digite qualquer coisa (cidade, SOC, endereço)">
+    <input id="busca" placeholder="Ex: Curitiba, SOC-PR1, Osasco">
 
-    <div id="lista"></div>
+    <div id="resultados" class="msg">
+      Digite algo para iniciar a busca
+    </div>
   </div>
 
   <script>
@@ -62,59 +74,50 @@
       .then(r => r.json())
       .then(raw => {
 
-        // 🔥 NORMALIZA QUALQUER JSON
         let dados = [];
 
+        // Normaliza QUALQUER JSON
         if (Array.isArray(raw)) {
           dados = raw;
         } else {
-          const primeiroNivel = Object.values(raw)[0];
-          if (Array.isArray(primeiroNivel)) {
-            dados = primeiroNivel;
-          }
+          const v = Object.values(raw)[0];
+          if (Array.isArray(v)) dados = v;
         }
 
-        const lista = document.getElementById("lista");
-        const busca = document.getElementById("busca");
+        const input = document.getElementById("busca");
+        const resultados = document.getElementById("resultados");
 
-        function render(arr) {
-          lista.innerHTML = "";
-          if (!arr || arr.length === 0) {
-            lista.innerHTML = "<div class='msg'>Nenhum resultado</div>";
-            return;
-          }
-
-          arr.forEach(linha => {
-            lista.innerHTML += `
-              <div class="item">
-                ${JSON.stringify(linha, null, 2)}
-              </div>
-            `;
-          });
-        }
-
-        // MOSTRA TUDO AO ABRIR
-        render(dados);
-
-        busca.addEventListener("input", () => {
-          const termo = busca.value.toLowerCase();
+        input.addEventListener("input", () => {
+          const termo = input.value.toLowerCase().trim();
 
           if (!termo) {
-            render(dados);
+            resultados.innerHTML = "Digite algo para iniciar a busca";
             return;
           }
 
-          const filtrado = dados.filter(l =>
+          const filtrados = dados.filter(l =>
             JSON.stringify(l).toLowerCase().includes(termo)
           );
 
-          render(filtrado);
+          if (filtrados.length === 0) {
+            resultados.innerHTML = "Nenhum resultado encontrado";
+            return;
+          }
+
+          resultados.innerHTML = "";
+          filtrados.forEach(l => {
+            resultados.innerHTML += `
+              <div class="resultado">
+                ${JSON.stringify(l, null, 2)}
+              </div>
+            `;
+          });
         });
 
       })
       .catch(e => {
         document.body.innerHTML =
-          "<h2 style='color:white;text-align:center'>ERRO AO CARREGAR JSON</h2>";
+          "<h2 style='color:white;text-align:center'>Erro ao carregar dados</h2>";
         console.error(e);
       });
   </script>

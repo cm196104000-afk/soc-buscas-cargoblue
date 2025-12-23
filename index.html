@@ -2,12 +2,78 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Busca de SOCs</title>
+  <title>Busca de SOCs – Cargo Blue</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: #fff;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body>
 
   <h1>Busca de SOCs – Cargo Blue</h1>
-  <p>Se você está vendo isso, o site está funcionando.</p>
+
+  <input
+    id="busca"
+    type="text"
+    placeholder="Digite cidade, SOC, HUB ou endereço"
+  >
+
+  <div id="resultados"></div>
+
+  <script>
+    fetch("rotas.json")
+      .then(response => response.json())
+      .then(dados => {
+
+        const input = document.getElementById("busca");
+        const resultados = document.getElementById("resultados");
+
+        input.addEventListener("input", () => {
+          const termo = input.value.toLowerCase();
+          resultados.innerHTML = "";
+
+          dados
+            .filter(item => {
+              const textoCompleto = Object.values(item)
+                .join(" ")
+                .toLowerCase();
+              return textoCompleto.includes(termo);
+            })
+            .forEach(item => {
+              resultados.innerHTML += `
+                <div class="card">
+                  ${Object.entries(item).map(
+                    ([chave, valor]) =>
+                      `<strong>${chave}:</strong> ${valor}<br>`
+                  ).join("")}
+                </div>
+              `;
+            });
+        });
+
+      });
+  </script>
 
 </body>
 </html>
